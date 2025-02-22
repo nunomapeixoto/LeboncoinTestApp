@@ -14,7 +14,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,6 +55,9 @@ class AlbumsViewModel @Inject constructor(
      */
     fun fetchData() {
         viewModelScope.launch {
+            _uiState.update {
+                UiState.Loading
+            }
             when (val result = fetchAlbumsFromNetworkUseCase()) {
                 is NetworkResult.Error -> {
                     //This could be used to inform the user that it was not possible to fetch the

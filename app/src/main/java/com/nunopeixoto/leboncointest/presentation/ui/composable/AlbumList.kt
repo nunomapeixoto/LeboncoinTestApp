@@ -21,38 +21,51 @@ import kotlinx.coroutines.flow.flowOf
  * and handles loading and error states for pagination.
  *
  * @param pagingItems The [LazyPagingItems] containing the paginated album data.
+ * @param fetchData The callback function to trigger data fetching when the [LazyPagingItems] is empty.
  */
 @Composable
-fun AlbumList(pagingItems: LazyPagingItems<AlbumUiModel>) {
-    LazyColumn {
-        items(
-            count = pagingItems.itemCount,
-            key = pagingItems.itemKey { it.id }
-        ) { index ->
-            val album = pagingItems[index]
-            if (album != null) {
-                AlbumItem(albumUiModel = album)
-                HorizontalDivider(color = Color.LightGray, thickness = 1.dp)
-            }
+fun AlbumList(pagingItems: LazyPagingItems<AlbumUiModel>, fetchData: () -> Unit) {
+    when {
+        pagingItems.loadState.refresh is LoadState.Loading -> {
+            LoadingIndicator()
         }
 
-        // Handle loading and error states for pagination.
-        pagingItems.apply {
-            when {
-                loadState.refresh is LoadState.Loading -> {
-                    item { LoadingIndicator() }
+        pagingItems.loadState.refresh is LoadState.Error -> {
+            Text(text = "Error")
+        }
+
+        pagingItems.itemCount == 0 && pagingItems.loadState.refresh is LoadState.NotLoading -> {
+            EmptyListWithRetryIndicator(fetchData)
+        }
+
+        else -> {
+            LazyColumn {
+                items(
+                    count = pagingItems.itemCount,
+                    key = pagingItems.itemKey { it.id }
+                ) { index ->
+                    val album = pagingItems[index]
+                    if (album != null) {
+                        AlbumItem(albumUiModel = album)
+                        HorizontalDivider(color = Color.LightGray, thickness = 1.dp)
+                    }
                 }
 
-                loadState.append is LoadState.Loading -> {
-                    item { LoadingIndicator() }
-                }
+                // Handle loading and error states for pagination.
+                pagingItems.apply {
+                    when (loadState.append) {
+                        is LoadState.Loading -> {
+                            item { LoadingIndicator() }
+                        }
 
-                loadState.refresh is LoadState.Error -> {
-                    item { Text(text = "Error") }
-                }
+                        is LoadState.Error -> {
+                            item { Text(text = "Error") }
+                        }
 
-                loadState.append is LoadState.Error -> {
-                    item { Text(text = "Error") }
+                        is LoadState.NotLoading -> {
+                            // Do nothing, the items are already displayed
+                        }
+                    }
                 }
             }
         }
@@ -81,5 +94,5 @@ fun createDummyLazyPagingItems(albums: List<AlbumUiModel>): LazyPagingItems<Albu
 fun AlbumListPreview() {
     val sampleAlbums = generateSampleAlbums(10)
     val pagingItems = createDummyLazyPagingItems(sampleAlbums)
-    AlbumList(pagingItems = pagingItems)
+    AlbumList(pagingItems = pagingItems) {}
 }

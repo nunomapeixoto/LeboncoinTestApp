@@ -18,10 +18,4 @@ sealed class UiState {
      * This state is used when the data has been successfully loaded and the UI should render it.
      */
     data object ShowData: UiState()
-
-    /**
-     * Represents the state where there is no data to display in the UI.
-     * This state is used when there is no data available to be displayed.
-     */
-    data object NoData: UiState()
 }

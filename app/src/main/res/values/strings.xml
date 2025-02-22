@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Leboncoin Test</string>
+    <string name="empty_list">It was not possible to get the Albums list</string>
+</resources>
